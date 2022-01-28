@@ -18,12 +18,12 @@ It'll work on any debian/ubuntu based distro
 
 #### Security Automations - SSH
 - [x] Install Fail2Ban - currently doesn't work if you change the ssh port
-- [ ] Change SSH port
-- [ ] Setup SSH key authentication and disable password authentication
-
+- [x] Change SSH port
+- [ ] Setup SSH key authentication and disable password authentication - coming soon
+ 
 #### Misc Automations
 - [x] installing docker
 - [x] installing portainer, a gui for docker
-- [x] installing nginx proxy manager + making some self signed certs
+- [ ] installing nginx proxy manager + making some self signed certs
 - [x] installing screenfetch
 - [x] setup a wireguard vpn server easily
