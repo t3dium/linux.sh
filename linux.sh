@@ -5,7 +5,7 @@
 
 ###########################################################################
 open_ports(){
-  if [ $ssh_port_userchoice == "yes" ]; then
+  if [ $list_ports_userchoice == "yes" ]; then
 
     echo "installing netstat to list open ports"
     #this requires the netstat dependency, might change this to a coreutil later.
@@ -22,7 +22,43 @@ open_ports(){
 }
 
 ###########################################################################
+ssh_key(){
+    #This is purposely commented out as I haven't tested it yet.
+#
+#     #might add an unattended setup option soon, but for now the user will have to interact to type their pass etc
+#     ssh-keygen
+#     #deleting the authorized keys file (as it may already exist and have content in it), and then regenerating it
+#     rm ~/.ssh/authorized_keys
+#     touch ~/.ssh/authorized_keys
+#     #getting public key contents and setting server to accept it
+#     cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+#     #logging in via ssh keys
+#     echo "Finished.
+# **IMPORTANT before continuing make sure to download your ssh private key, so that you can login over ssh.
+# You may download your ssh keys via an sftp client such as filezilla, or put it onto a usb.
+# Now when trying to ssh you may do so in the following format:
+#
+# ssh username@ip -p /private/key/path
+#
+# When you have finished press enter and the script will continue, before disabling normal password authentication (as you're using ssh keys), it's important that you've downloaded the key
+# "
+#
+#
+#     #the user needs to disable password authentication, may automate this later
+#     echo "Generated ssh keys and setup system to accept them:
+# the script will now run nano ~/.ssh/authorized keys.
+# You will need to set the following line: password_authentication to no, as it's currently allowing password authentication making this step useless."
+#
+#     nano ~/.ssh/authorized_keys
+#
+#     #restarting ssh service to apply changes
+#     sudo systemctl restart ssh
+    echo "not finished yet"
+    daily_updates
+}
+###########################################################################
 wireguard(){
+  #might add an unattended install option soon
   if [ $wireguard_choice == "yes" ]; then
     echo "selfhosting a wireguard vpn server.."
     echo "the installer isn't automatic.. "
@@ -78,7 +114,7 @@ ssh_screenfetch(){
     #faster/less bloated alternative to neofetch
     apt install screenfetch
     echo "Installed screenfetch"
-    #append to bashrc code below
+    echo "screenfetch" >> ~/.bashrc
     docker
   else
     docker
@@ -96,22 +132,6 @@ daily_updates(){
   ssh_screenfetch
 }
 ###########################################################################
-ssh_key(){
-    ### Creating SSH keys
-    echo "not finished yet"
-    daily_updates
-}
-###########################################################################
-ssh_port_change(){
-  echo "changing ssh port..."
-  ### Securing SSH - changing port###
-  echo "Enter what number you'd like to change your ssh port to"
-  read ssh_port
-  #code to change port here
-  #
-  ssh_key
-}
-###########################################################################
 ssh_fail2ban(){
   echo "installing fail2ban..."
   ### Securing SSH - fail2ban###
@@ -121,14 +141,28 @@ ssh_fail2ban(){
   sudo cp /etc/fail2ban/fail2ban.conf /etc/fail2ban/fail2ban.local
   /etc/init.d/fail2ban restart
   echo "Installed fail2ban"
-  ssh_port_change
+  daily_updates
 }
+###########################################################################
+ssh_port_change(){
+  ### Securing SSH - changing port###
+  echo "changing ssh port..."
+  echo "Enter what number you'd like to change your ssh port to, note that it must be above 1024 and below 65535"
+  read ssh_port
+  #to append values into the following format: Port number
+  port="Port "
+  concatinate="${port} ${ssh_port}"
+  echo $concatinate >> /etc/shs/sshd_config
+  echo "Finished changing the ssh port"
 
+  daily_updates
+}
+###########################################################################
 grub_root_only(){
   echo "setting grub to root only..."
   echo "coming soon"
 
-  ssh_fail2ban
+  ssh_port_change
 }
 ###########################################################################
 cron_root_only(){
@@ -214,6 +248,10 @@ read ssh_key_userchoice
 
 echo "would you like to change the ssh port? Y or N"
 read ssh_port_userchoice
+
+echo "would you like to list open ports at the end? Y or N"
+read list_ports_userchoice
+
 
 echo "would you like to setup a wireguard vpn server? It is highly advised to vpn into your server as opposed to port forwarding to the internet."
 read vpn_choice
