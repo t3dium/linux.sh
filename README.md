@@ -1,5 +1,5 @@
 # linux.sh
-A bash script I've made to automate my ubuntu server installs, it'll harden various aspects of the server and secure it, as well as automating some other useful tasks on a fresh install. **Not Yet Released**
+A bash script I've made to automate my ubuntu server installs, it'll harden various aspects of the server and secure it, as well as automating some other useful tasks on a fresh install.
 
 ## How to run
 1) `git clone https://github.com/t3dium/linux.sh.git`
@@ -18,7 +18,7 @@ It'll work on any debian/ubuntu based distro
 
 #### Security Automations - SSH
 - [x] Install Fail2Ban - currently doesn't work if you change the ssh port
-- [x] Change SSH port
+- [x] Change SSH port - [Defense in depth](https://en.m.wikipedia.org/wiki/Defense_in_depth_(computing)), **not** security by obscurity.
 - [ ] Setup SSH key authentication and disable password authentication - coming soon
  
 #### Misc Automations
