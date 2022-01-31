@@ -19,7 +19,7 @@ open_ports(){
 
     echo "${purple} installing netstat to list open ports"
     #this requires the netstat dependency, might change this to a coreutil later.
-    apt install netstat
+    apt install netstat -y
     echo "${green} running netstat - it's best to limit the number of open ports"
     netstat -tulpn
     echo "${red} finished running the script, your server will now restart..."
@@ -31,7 +31,6 @@ open_ports(){
     shutdown -r now
   fi
 }
-
 ###########################################################################
 ssh_key(){
     #This is purposely commented out as I haven't tested it yet.
@@ -88,7 +87,7 @@ wireguard(){
 ssh_fail2ban(){
   echo "${purple} installing fail2ban..."
   ### Securing SSH - fail2ban###
-  apt install fail2ban
+  apt install fail2ban -y
   #if case the user wants to edit fail2ban's config file
   cp /etc/fail2ban/jail.local /etc/fail2ban/jail.conf
   sudo cp /etc/fail2ban/fail2ban.conf /etc/fail2ban/fail2ban.local
@@ -151,7 +150,7 @@ ssh_screenfetch(){
   if [ $screenfetch_userchoice == "yes" ]; then
     echo "${purple} installing screenfetch"
     #faster/less bloated alternative to neofetch
-    apt install screenfetch
+    apt install screenfetch -y
     echo "${green} Installed screenfetch"
     echo "screenfetch" >> ~/.bashrc
     echo "${green} added to terminal startup"
