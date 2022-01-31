@@ -17,7 +17,7 @@ It'll work on any debian/ubuntu based distro
 - [x] list open ports, so the user can then close any unneeded ones.
 
 #### Security Automations - SSH
-- [x] Install Fail2Ban - currently doesn't work if you change the ssh port
+- [x] Install Fail2Ban
 - [x] Change SSH port - [Defense in depth](https://en.m.wikipedia.org/wiki/Defense_in_depth_(computing)), **not** security by obscurity.
 - [ ] Setup SSH key authentication and disable password authentication - coming soon
  
