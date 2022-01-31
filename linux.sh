@@ -3,20 +3,31 @@
 #Small script made as a starting point on automating a few stuff and hardening certain aspects of my servers.
 #By t3dium
 
+###################COLOURS ON THE ECHO PROMPTS#############################
+#installing notice
+purple=`tput setaf 5`
+#important notice
+red=`tput setaf 1`
+#finished
+green=`tput setaf 2`
+#normal
+reset=`tput sgr0`
 ###########################################################################
+
 open_ports(){
   if [ $list_ports_userchoice == "yes" ]; then
 
-    echo "installing netstat to list open ports"
+    echo "${purple} installing netstat to list open ports"
     #this requires the netstat dependency, might change this to a coreutil later.
     apt install netstat
-    echo "running netstat - it's best to limit the number of open ports"
+    echo "${green} running netstat - it's best to limit the number of open ports"
     netstat -tulpn
-    echo "echo finished running the script, your server will now restart..."
+    echo "${red} finished running the script, your server will now restart..."
+    echo "${red} restarting..."
     shutdown -r now
 
   else
-    echo "finished running the script, your server will now restart..."
+    echo "${red} finished running the script, your server will now restart... ${reset}"
     shutdown -r now
   fi
 }
@@ -54,16 +65,18 @@ ssh_key(){
 #     #restarting ssh service to apply changes
 #     sudo systemctl restart ssh
     echo "not finished yet"
-    daily_updates
+    open_ports
 }
 ###########################################################################
 wireguard(){
   #might add an unattended install option soon
   if [ $wireguard_choice == "yes" ]; then
-    echo "selfhosting a wireguard vpn server.."
-    echo "the installer isn't automatic.. "
+    echo "${purple} selfhosting a wireguard vpn server.."
+    echo "${purple} the installer isn't automatic, so you'll need to go through its TUI installer "
 
     curl -L https://install.pivpn.io | bash
+
+    echo "${green} finished selfhosting your vpn, make sure to port forward 51820 to the internet on your router settings in order to actually access the vpn from outside"
 
     open_ports
 
@@ -71,12 +84,38 @@ wireguard(){
     open_ports
   fi
 }
+###########################################################################
+ssh_fail2ban(){
+  echo "${purple} installing fail2ban..."
+  ### Securing SSH - fail2ban###
+  apt install fail2ban
+  #if case the user wants to edit fail2ban's config file
+  cp /etc/fail2ban/jail.local /etc/fail2ban/jail.conf
+  sudo cp /etc/fail2ban/fail2ban.conf /etc/fail2ban/fail2ban.local
+  /etc/init.d/fail2ban restart
+  echo "${green} Installed fail2ban"
+  wireguard
+}
+###########################################################################
+ssh_port_change(){
+  ### Securing SSH - changing port###
+  echo "${purple} changing ssh port..."
+  echo "${reset} Enter what number you'd like to change your ssh port to, note that it must be above 1024 and below 65535"
+  read ssh_port
+  #to append values into the following format: Port number
+  port="Port "
+  concatinate="${port} ${ssh_port}"
+  echo $concatinate >> /etc/shs/sshd_config
+  echo "${green} Finished changing the ssh port"
 
+  fail2ban
+}
+###########################################################################
 portainer(){
 
 #only running if the user wants this option
   if [ $portainer_userchoice == "yes" ]; then
-    echo "installing portainer..."
+    echo "${purple} installing portainer..."
     #installing portainer, a gui for docker.
 
     #creating its docker volume
@@ -89,19 +128,19 @@ portainer(){
         -v portainer_data:/data \
         portainer/portainer-ce:latest
 
-    echo "Installed portainer, You may access it via https://YOURIP:9443"
-    wireguard
+    echo "${green} Installed portainer, You may access it via https://YOURIP:9443"
+    ssh_port_change
   else
-    wireguard
+    ssh_port_change
   fi
 }
 ###########################################################################
 docker(){
   if [ $docker_userchoice == "yes" ]; then
-    echo "installing docker..."
+    echo "${purple} installing docker..."
     #installing docker
     curl -sSL https://get.docker.com | sh
-    echo "Installed docker"
+    echo "${green} Installed docker"
     portainer
   else
     portainer
@@ -110,11 +149,12 @@ docker(){
 ###########################################################################
 ssh_screenfetch(){
   if [ $screenfetch_userchoice == "yes" ]; then
-    echo "installing screenfetch"
+    echo "${purple} installing screenfetch"
     #faster/less bloated alternative to neofetch
     apt install screenfetch
-    echo "Installed screenfetch"
+    echo "${green} Installed screenfetch"
     echo "screenfetch" >> ~/.bashrc
+    echo "${green} added to terminal startup"
     docker
   else
     docker
@@ -122,88 +162,60 @@ ssh_screenfetch(){
 }
 ###########################################################################
 daily_updates(){
-  echo "setting daily updates..."
+  echo "${purple} setting daily updates..."
   job="@daily apt update; apt dist-upgrade -y"
   touch job
   echo $job >> job
   crontab job
   rm job
-  echo "Updates will now occur daily"
+  echo "${green} Updates will now occur daily"
   ssh_screenfetch
 }
 ###########################################################################
-ssh_fail2ban(){
-  echo "installing fail2ban..."
-  ### Securing SSH - fail2ban###
-  apt install fail2ban
-  #if case the user wants to edit fail2ban's config file
-  cp /etc/fail2ban/jail.local /etc/fail2ban/jail.conf
-  sudo cp /etc/fail2ban/fail2ban.conf /etc/fail2ban/fail2ban.local
-  /etc/init.d/fail2ban restart
-  echo "Installed fail2ban"
-  daily_updates
-}
-###########################################################################
-ssh_port_change(){
-  ### Securing SSH - changing port###
-  echo "changing ssh port..."
-  echo "Enter what number you'd like to change your ssh port to, note that it must be above 1024 and below 65535"
-  read ssh_port
-  #to append values into the following format: Port number
-  port="Port "
-  concatinate="${port} ${ssh_port}"
-  echo $concatinate >> /etc/shs/sshd_config
-  echo "Finished changing the ssh port"
-
-  daily_updates
-}
-###########################################################################
 grub_root_only(){
-  echo "setting grub to root only..."
-  echo "coming soon"
+  echo "${purple} setting grub to root only..."
+  echo "${red} coming soon"
 
-  ssh_port_change
+  daily_updates
 }
 ###########################################################################
 cron_root_only(){
-  echo "setting cron to root only..."
+  echo "${purple} setting cron to root only..."
   #restricting cron to root only
   touch /etc/cron.deny
-  echo "Please enter your username below, do not type root.
+  echo "${red} Please enter your username below, do not type root.
         Also, make sure to re-run this script, if you have more than one user."
   read user1
   echo $user >> /etc/cron.deny
-  echo "Done, editing crontab (task scheduling) should now be restricted to root"
+  echo "${green} Done, editing crontab (task scheduling) should now be restricted to root"
 
   grub_root_only
 }
 ###########################################################################
 #UPDATE SYSTEM BEFORE RUNNING SCRIPT#
 update_system(){
-  echo "Your system is being updated before proceeding.."
+  echo "${red} Your system is being updated before proceeding.."
   apt update
   apt upgrade -y
   apt dist-upgrade -y
-  echo "Finished updating, continuing.."
+  echo "${green} Finished updating, continuing.."
   cron_root_only
 }
 
 ###########################################################################
 check_root(){
   if [ "$USER" != "root" ]; then
-        echo "Permission Denied"
-        echo "Can only be run as root, make sure to run the script with sudo at the start of your command. For e.g, sudo bash linux.sh"
+        echo "${red} Permission Denied"
+        echo "${red} Can only be run as root, make sure to run the script with sudo at the start of your command. For e.g, sudo bash linux.sh"
         exit
   else
-        echo "Welcome"
+        echo "${reset} Welcome"
   fi
   update_system
 }
 ###########################################################################
 
-
-
-echo "Welcome to Linux.sh by t3dium
+echo "${reset} Welcome to Linux.sh by t3dium
 
 ----------------------------------------------
 General Security
@@ -251,7 +263,6 @@ read ssh_port_userchoice
 
 echo "would you like to list open ports at the end? Y or N"
 read list_ports_userchoice
-
 
 echo "would you like to setup a wireguard vpn server? It is highly advised to vpn into your server as opposed to port forwarding to the internet."
 read vpn_choice
