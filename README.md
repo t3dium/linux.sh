@@ -10,16 +10,18 @@ It'll work on any debian/ubuntu based distro
 
 ## What's been implemented so far:
 **(The script will allow user choice, and won't run all the tasks listed below)**
-#### Security Automations - General
-- [x] Automated updates
+#### Security Automations - Misc
+- [x] Automated System updates
 - [x] Restricting editing cron to root
-- [ ] Restricting editing grub to root
-- [x] list open ports, so the user can then close any unneeded ones.
+- [x] lynis, system audit tool
+- [x] overview of open ports at the end 
 
-#### Security Automations - SSH
-- [x] Install Fail2Ban
+#### Security Automations - Networking
+- [x] fail2ban - Application Intrusion Detection And Prevention
+- [x] psad - iptables Intrusion Detection And Prevention (prevents ddos and port scan attacks)
 - [x] Change SSH port - [Defense in depth](https://en.m.wikipedia.org/wiki/Defense_in_depth_(computing)), **not** security by obscurity.
-- [ ] Setup SSH key authentication and disable password authentication - coming soon
+- [x] securing dns, dnssec and encryption
+- [ ] Setup SSH key authentication and disable password authentication
  
 #### Misc Automations
 - [x] installing docker
