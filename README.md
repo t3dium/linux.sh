@@ -24,8 +24,8 @@ It'll work on any debian/ubuntu based distro
 - [x] Oerview of open ports at the end 
 
 #### Security Automations - Networking
-- [x] Fil2ban - Application Intrusion Detection And Prevention
-- [x] Pad - iptables Intrusion Detection And Prevention (prevents ddos and port scan attacks)
+- [x] Fail2ban - Application Intrusion Detection And Prevention
+- [x] Psad - iptables Intrusion Detection And Prevention (prevents ddos and port scan attacks)
 - [x] Change SSH port - [Defense in depth](https://en.m.wikipedia.org/wiki/Defense_in_depth_(computing)), **not** security by obscurity.
 - [x] Securing dns, dnssec and encryption - partially done
 - [ ] Setup SSH key authentication and disable password authentication
