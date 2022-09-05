@@ -61,13 +61,13 @@ Misc Security
 ----------------------------------------------
 Software - all [optional]
 ----------------------------------------------
-15 = install screenfetch
-16 = install docker
-17 = selfhost portainer or yacht (docker web-gui)
-18 = setup a wireguard vpn server - pivpn - user friendly cli
-19 = setup a wireguard vpn server - wg-easy - web gui
-20 = selfhost bender - dashboard - homer fork which allows editing entries via its web gui - info: ${reset}https://github.com/jez500/bender${green}
-21 = selfhost nginx proxy manager - webgui for nginx for reverse proxying services and configuring SSL
+16 = install screenfetch
+17 = install docker
+18 = selfhost portainer or yacht (docker web-gui)
+19 = setup a wireguard vpn server - pivpn - user friendly cli
+20 = setup a wireguard vpn server - wg-easy - web gui
+21 = selfhost bender - dashboard - homer fork which allows editing entries via its web gui - info: ${reset}https://github.com/jez500/bender${green}
+22 = selfhost nginx proxy manager - webgui for nginx for reverse proxying services and configuring SSL
 ----------------------------------------------"
 
 echo "${red}enter some text to proceed"
@@ -110,9 +110,16 @@ fi
 ###########################################################################################################################################################################################################################################################
 if (whiptail --title "change ssh port?" --yesno "Would you like to change the ssh port? May reduce spam in logs against automated or inexperienced attacks, defence in depth - NOTE that functions which require interaction will run at the end" 8 78); then
   ssh_port_userchoice="yes"
+  ssh_port=$(whiptail --title "change ssh port" --inputbox "Enter what number you'd like to change your ssh port to, note that it must be above 1024 and below 65535" 8 78 3>&1 1>&2 2>&3)
 else
   ssh_port_userchoice="no"
 fi
+###########################################################################################################################################################################################################################################################
+#if (whiptail --title "setup ssh key's?" --yesno "Setup ssh keys? This is highly recommended as not only does it increase convenience but it also prevents brute forcing into ssh. However if not, fail2ban will already be installed which should help by ratelimiting." 8 78); then
+#  sshkeys_userchoice="yes"
+#else
+#  sshkeys_userchoice="no"
+#fi
 ###########################################################################################################################################################################################################################################################
 if (whiptail --title "setup pivpn?" --yesno "would you like to setup a wireguard vpn server via pivpn? (cli) (web gui option in next menu) It is highly advised to vpn into your server as opposed to port forwarding to the internet." 8 78); then
   pivpn_choice="yes"
@@ -301,6 +308,53 @@ if [ $systemd_userchoice == "yes" ]; then
   echo "${red}if this causes breakage just delete the folder for your service in /etc/systemd/service/[name-of-service] which contains the override"
 fi
 ###########################################################################################################################################################################################################################################################
+if [ $ssh_port_userchoice == "yes" ]; then
+  echo "${purple}changing ssh port..."
+  port="Port"
+  concatinate="${port} ${ssh_port}"
+  echo $concatinate >> /etc/shs/sshd_config
+  echo "${green}Finished changing the ssh port"
+fi
+###########################################################################################################################################################################################################################################################
+echo "${purple}Disabling weak ssh ciphers and mac's..."
+echo "Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes256-ctr" >> /etc/shs/sshd_config
+echo "MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-256" >> /etc/shs/sshd_config
+echo "${green}done"
+###########################################################################################################################################################################################################################################################
+echo "${purple}Disabling unecessary modules"
+echo "blacklist bluetooth" >> /etc/modprobe.d/bluetooth.conf
+echo "${green}Disabled bluetooth"
+echo "blacklist bnep" >> /etc/modprobe.d/bnep.conf
+echo "${green}Disabled bnep - module related to bluetooth"
+echo "blacklist cpia2" >> /etc/modprobe.d/cpia2.conf
+echo "${green}Disabled cpia2 - module related to cameras"
+echo "blacklist firewire-core" >> /etc/modprobe.d/firewire-core.conf
+echo "${green}Disabled firewire-core - used for firewire cables"
+echo "blacklist floppy" >> /etc/modprobe.d/floppy.conf
+echo "${green}Disabled floppy - used for floppy disks"
+echo "blacklist n_hdlc" >> /etc/modprobe.d/n_hdlc.conf
+echo "${green}Disabled n_hdlc - unecessary"
+echo "blacklist net-pf-31" >> /etc/modprobe.d/net-pf-31.conf
+echo "${green}Disabled net-pf-31 - module related to bluetooth"
+echo "blacklist pcspkr" >> /etc/modprobe.d/pcspkr.conf
+echo "${green}Disabled pcspkr - module related to sound"
+echo "blacklist soundcore" >> /etc/modprobe.d/soundcore.conf
+echo "${green}Disabled soundcore - module related to sound"
+echo "blacklist thunderbolt" >> /etc/modprobe.d/thunderbolt.conf
+echo "${green}Disabled thunderbolt - unecessary for a server"
+echo "blacklist uvcvideo" >> /etc/modprobe.d/uvcvideo.conf
+echo "${green}Disabled uvcvideo - module used for UVC - video streaming over usb - for stuff like webcams"
+echo "blacklist v4l2_common" >> /etc/modprobe.d/v4l2_common.conf
+echo "${green}Disabled v4l2_common - module related to cameras"
+echo "${green}done"
+###########################################################################################################################################################################################################################################################
+echo "${purple}Disabling unecessary network protocols"
+echo "blacklist dccp" >> /etc/modprobe.d/dccp.conf
+echo "blacklist sctp" >> /etc/modprobe.d/sctp.conf
+echo "blacklist rds" >> /etc/modprobe.d/rds.conf
+echo "blacklist tipc" >> /etc/modprobe.d/tipc.conf
+echo "${green}Disabled unecessary network protocols"
+###########################################################################################################################################################################################################################################################
 if [ $mountpoints_userchoice == "yes" ]; then
   echo "${purple} Backing up fstab file to /etc/ftab-COPY"
   sudo cp /etc/fstab /etc/fstab-COPY
@@ -313,15 +367,6 @@ if [ $mountpoints_userchoice == "yes" ]; then
   nano /etc/fstab
   #remounting /proc
   sudo mount -o remount,hidepid=2 /proc
-fi
-###########################################################################################################################################################################################################################################################
-if [ $ssh_port_userchoice == "yes" ]; then
-  ssh_port=$(whiptail --title "change ssh port" --inputbox "Enter what number you'd like to change your ssh port to, note that it must be above 1024 and below 65535" 8 78 3>&1 1>&2 2>&3)
-  echo "${purple}changing ssh port..."
-  port="Port"
-  concatinate="${port} ${ssh_port}"
-  echo $concatinate >> /etc/shs/sshd_config
-  echo "${green}Finished changing the ssh port"
 fi
 ###########################################################################################################################################################################################################################################################
 echo "${purple}hardening cron and sshd editing permissions"
@@ -410,6 +455,11 @@ fi
 #if [ $dnsoption_userchoice == "3" ]; then
 #
 #fi
+############################################################################################################################################################################################################################################################
+#if [ $sshkeys_userchoice == "1" ]; then
+#
+#fi
+
 ###########################################################################################################################################################################################################################################################
 if [ $lynis_userchoice == "yes" ]; then
   echo "${purple}installing lynis, a system auditing tool...."
