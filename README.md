@@ -20,15 +20,18 @@ It'll work on any debian/ubuntu based distro
 - [X] Mountpoint hardening - hardening /boot, /boot/efi, and /var and hiding /proc
 - [x] Disable core dumps - contains sensitive info in its memory snapshots
 - [x] Restricting /proc/kallsyms - info on how kernel memory is laid out which makes it easier to attack the kernel itself
-- [x] Lys, system audit tool
-- [x] Oerview of open ports at the end 
+- [x] Lynis, system audit tool
+- [x] Overview of open ports at the end 
+- [x] Disable unecessary services: bluetooth bnep cpia2 firewire-core floppy n_hdlc net-pf-31 pcspkr soundcore thunderbolt uvcvideo v4l2_common.
+- [x] Disable unecessary network protocols: dccp sctp rds tipc
 
 #### Security Automations - Networking
-- [x] Fail2ban - Application Intrusion Detection And Prevention
 - [x] Psad - iptables Intrusion Detection And Prevention (prevents ddos and port scan attacks)
+- [x] Fail2ban - Application Intrusion Detection And Prevention 
 - [x] Change SSH port - [Defense in depth](https://en.m.wikipedia.org/wiki/Defense_in_depth_(computing)), **not** security by obscurity.
-- [x] Securing dns, dnssec and encryption - partially done
 - [ ] Setup SSH key authentication and disable password authentication
+- [x] Disable weak ssh ciphers and MAC's 
+- [x] Securing dns, dnssec and encryption - partially done
  
 #### Misc Automations
 - [x] installing docker
