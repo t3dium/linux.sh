@@ -58,16 +58,17 @@ Misc Security
 13 = MountPoint Hardening - hardening /boot, /boot/efi, and /var and hiding /proc - [optional]
 14 = disable core dumps - contains sensitive info in its memory snapshots (used for troubleshooting)
 15 = restricting /proc/kallsyms - info on how kernel memory is laid out which makes it easier to attack the kernel itself
+16 = Disable various compilers: as byacc yacc bcc kgcc cc gcc c++ g++, ${purple}to re-enable just edit the permissions, for e.g chmod 755 /usr/bin/gcc
 ----------------------------------------------
 Software - all [optional]
 ----------------------------------------------
-16 = install screenfetch
-17 = install docker
-18 = selfhost portainer or yacht (docker web-gui)
-19 = setup a wireguard vpn server - pivpn - user friendly cli
-20 = setup a wireguard vpn server - wg-easy - web gui
-21 = selfhost bender - dashboard - homer fork which allows editing entries via its web gui - info: ${reset}https://github.com/jez500/bender${green}
-22 = selfhost nginx proxy manager - webgui for nginx for reverse proxying services and configuring SSL
+17 = install screenfetch
+18 = install docker
+19 = selfhost portainer or yacht (docker web-gui)
+20 = setup a wireguard vpn server - pivpn - user friendly cli
+21 = setup a wireguard vpn server - wg-easy - web gui
+22 = selfhost bender - dashboard - homer fork which allows editing entries via its web gui - info: ${reset}https://github.com/jez500/bender${green}
+23 = selfhost nginx proxy manager - webgui for nginx for reverse proxying services and configuring SSL
 ----------------------------------------------"
 
 echo "${red}enter some text to proceed"
@@ -84,6 +85,12 @@ if (whiptail --title "get LKRG?" --yesno "Would you like to install LKRG? A linu
   lkrg_userchoice="yes"
 else
   lkrg_userchoice="no"
+fi
+###########################################################################################################################################################################################################################################################
+if (whiptail --title "Disable various compilers?" --yesno "Disable various compilers? You can re-enable by just changing permissions for e.g chmod 775 /usr/bin/gcc " 8 78); then
+  compilers_userchoice="yes"
+else
+  compilers_userchoice="no"
 fi
 ###########################################################################################################################################################################################################################################################
 if (whiptail --title "harden systemd?" --yesno "Would you like to use some pre-made hardened systemd service templates" 8 78); then
@@ -183,6 +190,20 @@ echo $job >> job
 crontab job
 rm job
 echo "${green}System updates will now occur daily"
+###########################################################################################################################################################################################################################################################
+if [ $compilers_userchoice == "yes" ]; then
+  echo "${purple}Disabling as byacc yacc bcc kgcc cc gcc c++ g++ compilers..."
+  chmod 000 /usr/bin/as >/dev/null 2>&1
+  chmod 000 /usr/bin/byacc >/dev/null 2>&1
+  chmod 000 /usr/bin/yacc >/dev/null 2>&1
+  chmod 000 /usr/bin/bcc >/dev/null 2>&1
+  chmod 000 /usr/bin/kgcc >/dev/null 2>&1
+  chmod 000 /usr/bin/cc >/dev/null 2>&1
+  chmod 000 /usr/bin/gcc >/dev/null 2>&1
+  chmod 000 /usr/bin/*c++ >/dev/null 2>&1
+  chmod 000 /usr/bin/*g++ >/dev/null 2>&1
+  echo "${green}Done, to re-enable just edit the permissions, for e.g chmod 755 /usr/bin/gcc"
+fi
 ###########################################################################################################################################################################################################################################################
 if [ $lkrg_userchoice == "yes" ]; then
   echo "${purple}adding kicksecure repository"
