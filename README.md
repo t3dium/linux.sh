@@ -25,6 +25,7 @@ It'll work on any debian/ubuntu based distro
 - [x] Disable unecessary services: bluetooth bnep cpia2 firewire-core floppy n_hdlc net-pf-31 pcspkr soundcore thunderbolt uvcvideo v4l2_common.
 - [x] Disable unecessary network protocols: dccp sctp rds tipc
 - [x] Disable various compilers: as byacc yacc bcc kgcc cc gcc c++ g++, to re-enable just edit the permissions, for e.g ``chmod 755 /usr/bin/gcc``
+- [x] Setting bashrc & bash_profile as immutable (prevent malicious edits such as a fake sudo function)
 
 #### Security Automations - Networking
 - [x] Psad - iptables Intrusion Detection And Prevention (prevents ddos and port scan attacks)
