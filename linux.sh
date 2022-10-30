@@ -46,29 +46,33 @@ Network Security
 4 = ssh key authentication - [optional]
 5 = configure dns encryption
 6 = list open ports
+7 = enforce strong ciphers & MACs
 ----------------------------------------------
 Misc Security
 ----------------------------------------------
-7 = harden cron and sshd editing permissions
-8 = daily updates
+8 = harden cron and sshd editing permissions
+9 = daily updates
 10 = automatic docker updates (via watchtower) - [optional]
-10 = lynis, system audit tool
-11 = systemd service sandbox hardening - [very experimental] - info: ${reset}https://github.com/t3dium/systemd-sandboxing${green}
-12 = LKRG - [optional] - prevent changes & exploits to the linux kernel - may affect performance slightly, especially wireguard
-13 = MountPoint Hardening - hardening /boot, /boot/efi, and /var and hiding /proc - [optional]
-14 = disable core dumps - contains sensitive info in its memory snapshots (used for troubleshooting)
-15 = restricting /proc/kallsyms - info on how kernel memory is laid out which makes it easier to attack the kernel itself
-16 = Disable various compilers: as byacc yacc bcc kgcc cc gcc c++ g++, ${purple}to re-enable just edit the permissions, for e.g chmod 755 /usr/bin/gcc
+11 = lynis, system audit tool
+12 = systemd service sandbox hardening - [optional] - [very experimental] - info: ${reset}https://github.com/t3dium/systemd-sandboxing${green}
+13 = LKRG - [optional] - prevent changes & exploits to the linux kernel - may affect performance slightly, especially wireguard
+14 = MountPoint Hardening - hardening /boot, /boot/efi, and /var and hiding /proc - [optional]
+15 = disable core dumps - contains sensitive info in its memory snapshots (used for troubleshooting)
+16 = restricting /proc/kallsyms - info on how kernel memory is laid out which makes it easier to attack the kernel itself
+17 = Disable various compilers: as byacc yacc bcc kgcc cc gcc c++ g++, ${purple}to re-enable just edit the permissions, for e.g chmod 755 /usr/bin/gcc
+18 = Prevent malicious bashrc & bash_profile editing - (prevents fakesudo vulnerability etc.)
+19 = Disable unecessary modules
+20 = Disable unecessary network protocols
 ----------------------------------------------
 Software - all [optional]
 ----------------------------------------------
-17 = install screenfetch
-18 = install docker
-19 = selfhost portainer or yacht (docker web-gui)
-20 = setup a wireguard vpn server - pivpn - user friendly cli
-21 = setup a wireguard vpn server - wg-easy - web gui
-22 = selfhost bender - dashboard - homer fork which allows editing entries via its web gui - info: ${reset}https://github.com/jez500/bender${green}
-23 = selfhost nginx proxy manager - webgui for nginx for reverse proxying services and configuring SSL
+21 = install screenfetch
+22 = install docker
+23 = selfhost portainer or yacht (docker web-gui)
+24 = setup a wireguard vpn server - pivpn - user friendly cli
+25 = setup a wireguard vpn server - wg-easy - web gui
+26 = selfhost bender - dashboard - homer fork which allows editing entries via its web gui - info: ${reset}https://github.com/jez500/bender${green}
+27 = selfhost nginx proxy manager - webgui for nginx for reverse proxying services and configuring SSL
 ----------------------------------------------"
 
 echo "${red}enter some text to proceed"
@@ -337,7 +341,7 @@ if [ $ssh_port_userchoice == "yes" ]; then
   echo "${green}Finished changing the ssh port"
 fi
 ###########################################################################################################################################################################################################################################################
-echo "${purple}Disabling weak ssh ciphers and mac's..."
+echo "${purple}Enforcing strong ssh ciphers and mac's..."
 echo "Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes256-ctr" >> /etc/shs/sshd_config
 echo "MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-256" >> /etc/shs/sshd_config
 echo "${green}done"
@@ -403,7 +407,13 @@ echo "${green}done"
 echo "${purple}hardening /proc/kallsyms"
 chmod 400 /proc/kallsyms
 echo "${green}done"
-###########################################################################################################################################################################################################################################################[ $coredump_choice == "yes" ]; then
+###########################################################################################################################################################################################################################################################
+echo "${purple}Using chattr +i on ~/.bashrc to prevent malicious editing."
+# setting bashrc & bash_profile as immutable, so it can't be modified. To modify, root access is needed to remove the chattr
+chattr +i ~/.bashrc
+chattr +i ~/.bash_profile
+echo "${green}hardened ~/.bashrc & bash_profile to prevent malicious edits, *** to undo ***, or to edit bashrc run the following command: sudo chattr -i ~/.bashrc && sudo chattr -i ~/.bash_profile"
+###########################################################################################################################################################################################################################################################
 echo "${green}disabling core dumps.."
 echo "${red} add the following lines to the end of the file:"
 echo "${red} * soft core 0"
