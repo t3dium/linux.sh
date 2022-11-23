@@ -40,7 +40,7 @@ It'll work on any debian/ubuntu based distro
 - [x] installing portainer, a gui for docker
 - [x] or installing yacht, a gui for docker
 - [x] installing nginx proxy manager 
-- [ ] + making some self signed certs
+- [x] + making some self signed certs (via mkcert)
 - [x] installing screenfetch
 - [x] installing bender - homer fork which allows editing entries via its webgui - dashboard
 - [x] setup a wireguard vpn server easily - pivpn - cli
