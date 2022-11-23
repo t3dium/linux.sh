@@ -21,7 +21,7 @@ if [ "$USER" != "root" ]; then
       whiptail --title "warning" --msgbox "Permission Denied, script needs to run as root. Re-run this command but with sudo at the start" 8 78
       exit
 else
-      whiptail --title "unattended-upgrades" --msgbox "Welcome to unattended-upgrades, press [enter] to continue" 8 78
+      whiptail --title "linux.sh" --msgbox "Welcome to linux.sh, press [enter] to continue" 8 78
 fi
 #############################################################################################################################################
 
@@ -73,6 +73,7 @@ Software - all [optional]
 25 = setup a wireguard vpn server - wg-easy - web gui
 26 = selfhost bender - dashboard - homer fork which allows editing entries via its web gui - info: ${reset}https://github.com/jez500/bender${green}
 27 = selfhost nginx proxy manager - webgui for nginx for reverse proxying services and configuring SSL
+28 = generate some selfsigned certs (signed with a generated CA)
 ----------------------------------------------"
 
 echo "${red}enter some text to proceed"
@@ -138,7 +139,7 @@ else
   pivpn_choice="no"
 fi
 ###########################################################################################################################################################################################################################################################
-if (whiptail --title "setup wgeasy?" --yesno "would you like to setup a wireguard vpn server via pivpn? (cli) (web gui option in next menu) It is highly advised to vpn into your server as opposed to port forwarding to the internet." 8 78); then
+if (whiptail --title "setup wgeasy?" --yesno "would you like to setup a wireguard vpn server via wg-easy? (webgui) It is highly advised to vpn into your server as opposed to port forwarding to the internet." 8 78); then
   wgeasy_userchoice="yes"
 else
   wgeasy_userchoice="no"
@@ -168,7 +169,7 @@ else
   portainer_userchoice="no"
 fi
 ###########################################################################################################################################################################################################################################################
-if (whiptail --title "install yacht?" --yesno "Would you like to install yahct - a docker webgui?" 8 78); then
+if (whiptail --title "install yacht?" --yesno "Would you like to install yacht - a docker webgui?" 8 78); then
   yacht_userchoice="yes"
 else
   yacht_userchoice="no"
@@ -180,7 +181,13 @@ else
   npm_userchoice="no"
 fi
 ###########################################################################################################################################################################################################################################################
-if (whiptail --title "install bender?" --yesno "Would you like to install yahct - a docker webgui?" 8 78); then
+if (whiptail --title "mkcert?" --yesno "Would you like to generate some CA signed, self signed certs??" 8 78); then
+  mkcert_userchoice="yes"
+else
+  mkcert_userchoice="no"
+fi
+###########################################################################################################################################################################################################################################################
+if (whiptail --title "install bender?" --yesno "Would you like to install yacht - a docker webgui?" 8 78); then
   bender_userchoice="yes"
 else
   bender_userchoice="no"
@@ -468,6 +475,21 @@ if [ $wgeasy_userchoice == "yes" ]; then
   weejewel/wg-easy
 fi
 ###########################################################################################################################################################################################################################################################
+if [ $mkcert_userchoice == "yes" ]; then
+  echo "${purple}fetching the mkcert binary"
+  # curl'ing from his website to fetch latest release
+  curl -JLO "https://dl.filippo.io/mkcert/latest?for=linux/amd64"
+  chmod +x mkcert-v*-linux-amd64
+  sudo cp mkcert-v*-linux-amd64 /usr/local/bin/mkcert
+  echo "${purple}generating CA cert"
+  mkcert -install
+  echo "${green}generated CA cert"
+  echo "${red}what domains or ips would you like the ssl cert to be valid for?"
+  read domains_for_cert
+  mkcert ${domains_for_cert}
+  echo "${green}generated cert, to create more run: mkcert either_domain_here or_ip_here"
+fi
+###########################################################################################################################################################################################################################################################
 # nextdns
 if [ $dnsoption_userchoice == "1" ]; then
   sh -c 'sh -c "$(curl -sL https://nextdns.io/install)"'
@@ -499,7 +521,7 @@ if [ $lynis_userchoice == "yes" ]; then
   sudo echo "deb https://packages.cisofy.com/community/lynis/deb/ stable main" | sudo tee /etc/apt/sources.list.d/cisofy-lynis.list
   sudo apt install lynis host
   echo "${green}installed lynis.."
-  if (whiptail --title "run lynis now?" --yesno "Installed lynis. Would you like to start a system audit now? Not really necessary on a fresh install" 8 78); then
+  if (whiptail --title "run lynis now?" --yesno "Installed lynis. Would you like to start a system audit now?" 8 78); then
     sudo lynis update info
     sudo lynis audit system
   fi
