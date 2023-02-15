@@ -26,6 +26,7 @@ It'll work on any debian/ubuntu based distro
 - [x] Disable unecessary network protocols: dccp sctp rds tipc
 - [x] Disable various compilers: as byacc yacc bcc kgcc cc gcc c++ g++, to re-enable just edit the permissions, for e.g ``chmod 755 /usr/bin/gcc``
 - [x] Setting bashrc & bash_profile as immutable (prevent malicious edits such as a fake sudo function)
+- [x] Replacing timesyncd with chrony, since it failed to keep time up to date on my rpi suffering from time drift, leading to issues with DoH & Dnssec for e.g, also configuring chrony to use NTS which is secure ntp.
 
 #### Security Automations - Networking
 - [x] Psad - iptables Intrusion Detection And Prevention (prevents ddos and port scan attacks)
