@@ -44,8 +44,8 @@ Network Security
 2 = PSAD - iptables Intrusion Detection And Prevention (prevents ddos and port scan attacks)
 3 = change ssh port - [optional]
 4 = ssh key authentication - [optional]
-5 = configure dns encryption
-6 = list open ports
+5 = configure dns encryption - [optional]
+6 = list open ports at end
 7 = enforce strong ciphers & MACs
 ----------------------------------------------
 Misc Security
@@ -59,24 +59,25 @@ Misc Security
 14 = MountPoint Hardening - hardening /boot, /boot/efi, and /var and hiding /proc - [optional]
 15 = disable core dumps - contains sensitive info in its memory snapshots (used for troubleshooting)
 16 = restricting /proc/kallsyms - info on how kernel memory is laid out which makes it easier to attack the kernel itself
-17 = Disable various compilers: as byacc yacc bcc kgcc cc gcc c++ g++, ${purple}to re-enable just edit the permissions, for e.g chmod 755 /usr/bin/gcc
-18 = Prevent malicious bashrc & bash_profile editing - (prevents fakesudo vulnerability etc.)
+17 = Disable various compilers: as byacc yacc bcc kgcc cc gcc c++ g++, ${purple}to re-enable just edit the permissions, for e.g chmod 755 /usr/bin/gcc${green}
+18 = Prevent malicious bashrc & bash_profile editing ${purple} (if you want to edit it simply run:  chattr -i ~/.bashrc && chattr -i ~/.bash_profile)${green}
 19 = Disable unecessary modules
 20 = Disable unecessary network protocols
+21 = Replace timesyncd with chrony, and configure it to use NTS
 ----------------------------------------------
 Software - all [optional]
 ----------------------------------------------
-21 = install screenfetch
-22 = install docker
-23 = selfhost portainer or yacht (docker web-gui)
-24 = setup a wireguard vpn server - pivpn - user friendly cli
-25 = setup a wireguard vpn server - wg-easy - web gui
-26 = selfhost bender - dashboard - homer fork which allows editing entries via its web gui - info: ${reset}https://github.com/jez500/bender${green}
-27 = selfhost nginx proxy manager - webgui for nginx for reverse proxying services and configuring SSL
-28 = generate some selfsigned certs (signed with a generated CA)
+22 = install screenfetch
+23 = install docker
+24 = selfhost portainer or yacht (docker web-gui)
+25 = setup a wireguard vpn server - pivpn - user friendly cli
+26 = setup a wireguard vpn server - wg-easy - web gui
+27 = selfhost bender - dashboard - homer fork which allows editing entries via its web gui - info: ${reset}https://github.com/jez500/bender${green}
+28 = selfhost nginx proxy manager - webgui for nginx for reverse proxying services and configuring SSL
+29 = generate some selfsigned certs (signed with a generated CA)
 ----------------------------------------------"
 
-echo "${red}enter some text to proceed"
+echo "${red} Press ENTER to begin."
 read random_wait_variable
 
 ###########################################################################################################################################################################################################################################################
@@ -219,10 +220,10 @@ fi
 if [ $lkrg_userchoice == "yes" ]; then
   echo "${purple}adding kicksecure repository"
   wget https://www.kicksecure.com/derivative.asc
-  sudo cp derivative.asc /usr/share/keyrings/derivative.asc
+  cp derivative.asc /usr/share/keyrings/derivative.asc
   echo "deb [signed-by=/usr/share/keyrings/derivative.asc] https://deb.kicksecure.com bullseye main contrib non-free" | sudo tee /etc/apt/sources.list.d/derivative.list
   echo "${purple}installing LKRG"
-  sudo apt install lkrg-dkms linux-headers-amd64
+  apt install lkrg-dkms linux-headers-amd64
   echo "${green}instaled LKRG"
 fi
 ###########################################################################################################################################################################################################################################################
@@ -317,7 +318,7 @@ echo "${purple}installing fail2ban..."
 apt install fail2ban -y
 #if case the user wants to edit fail2ban's config file
 cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
-sudo cp /etc/fail2ban/fail2ban.conf /etc/fail2ban/fail2ban.local
+cp /etc/fail2ban/fail2ban.conf /etc/fail2ban/fail2ban.local
 /etc/init.d/fail2ban restart
 echo "${green}Installed fail2ban"
 echo "${red}Switching fail2ban's ban type to DROP instead of reject is arguably better, since an attacker won't know if they're banned and hence will keep trying as opposed to changing their ip address"
@@ -389,7 +390,7 @@ echo "${green}Disabled unecessary network protocols"
 ###########################################################################################################################################################################################################################################################
 if [ $mountpoints_userchoice == "yes" ]; then
   echo "${purple} Backing up fstab file to /etc/ftab-COPY"
-  sudo cp /etc/fstab /etc/fstab-COPY
+  cp /etc/fstab /etc/fstab-COPY
   echo "${purple} opening fstab file"
   echo "${red} for /boot, /boot/efi, and /var:  append ,nodev,nosuid,noexec to the list of mount options in column 4"
   echo ""
@@ -398,21 +399,29 @@ if [ $mountpoints_userchoice == "yes" ]; then
   read random_wait_variable2
   nano /etc/fstab
   #remounting /proc
-  sudo mount -o remount,hidepid=2 /proc
+  mount -o remount,hidepid=2 /proc
 fi
 ###########################################################################################################################################################################################################################################################
 echo "${purple}hardening cron and sshd editing permissions"
-sudo chmod 600 /etc/crontab
-sudo chmod 600 /etc/ssh/sshd_config
-sudo chmod 700 /etc/cron.d
-sudo chmod 700 /etc/cron.daily
-sudo chmod 700 /etc/cron.hourly
-sudo chmod 700 /etc/cron.weekly
-sudo chmod 700 /etc/cron.monthly
+chmod 600 /etc/crontab
+chmod 600 /etc/ssh/sshd_config
+chmod 700 /etc/cron.d
+chmod 700 /etc/cron.daily
+chmod 700 /etc/cron.hourly
+chmod 700 /etc/cron.weekly
+chmod 700 /etc/cron.monthly
 echo "${green}done"
 ###########################################################################################################################################################################################################################################################
 echo "${purple}hardening /proc/kallsyms"
 chmod 400 /proc/kallsyms
+echo "${green}done"
+###########################################################################################################################################################################################################################################################
+echo "${purple}installing chrony for better time management than timesynd"
+apt install chrony -y
+systemctl start chrony && systemctl enable chrony
+echo "${purple} Configuring it to use NTS (secure ntp)"
+cat ./chrony.conf > /etc/chrony/chrony.conf
+systemctl restart chrony
 echo "${green}done"
 ###########################################################################################################################################################################################################################################################
 echo "${purple}Using chattr +i on ~/.bashrc to prevent malicious editing."
@@ -427,14 +436,14 @@ echo "${red} * soft core 0"
 echo "${red} * hard core 0"
 echo "${purple} type y when you're ready to proceed...."
 read waitrandomvariable
-sudo nano /etc/security/limits.conf
+nano /etc/security/limits.conf
 echo "${red} now add this line to the end of the second file"
 echo "${red} fs.suid_dumpable=0"
 echo "${purple} type y when you're ready to proceed...."
 read waitrandomvariabletwo
-sudo nano /etc/sysctl.conf
+nano /etc/sysctl.conf
 #applying
-sudo sysctl -p
+sysctl -p
 ###########################################################################################################################################################################################################################################################
 if [ $pivpn_choice == "yes" ]; then
   echo "${purple}selfhosting a wireguard vpn server via pivpn.."
@@ -480,7 +489,7 @@ if [ $mkcert_userchoice == "yes" ]; then
   # curl'ing from his website to fetch latest release
   curl -JLO "https://dl.filippo.io/mkcert/latest?for=linux/amd64"
   chmod +x mkcert-v*-linux-amd64
-  sudo cp mkcert-v*-linux-amd64 /usr/local/bin/mkcert
+  cp mkcert-v*-linux-amd64 /usr/local/bin/mkcert
   echo "${purple}generating CA cert"
   mkcert -install
   echo "${green}generated CA cert"
@@ -495,7 +504,7 @@ if [ $dnsoption_userchoice == "1" ]; then
   sh -c 'sh -c "$(curl -sL https://nextdns.io/install)"'
   echo "${red} Enter your nextdns config id here, (you'll need a free nextdns account), you can find this on my.nextdns.io"
   read confignextdns
-  sudo nextdns config set \
+  nextdns config set \
     -config ${confignextdns}
 fi
 #
@@ -516,23 +525,21 @@ fi
 ###########################################################################################################################################################################################################################################################
 if [ $lynis_userchoice == "yes" ]; then
   echo "${purple}installing lynis, a system auditing tool...."
-  sudo apt install apt-transport-https ca-certificates host -y
-  sudo wget -O - https://packages.cisofy.com/keys/cisofy-software-public.key | sudo apt-key add -
-  sudo echo "deb https://packages.cisofy.com/community/lynis/deb/ stable main" | sudo tee /etc/apt/sources.list.d/cisofy-lynis.list
-  sudo apt install lynis host
+  apt install apt-transport-https ca-certificates host -y
+  wget -O - https://packages.cisofy.com/keys/cisofy-software-public.key | apt-key add -
+  echo "deb https://packages.cisofy.com/community/lynis/deb/ stable main" | tee /etc/apt/sources.list.d/cisofy-lynis.list
+  apt install lynis host
   echo "${green}installed lynis.."
   if (whiptail --title "run lynis now?" --yesno "Installed lynis. Would you like to start a system audit now?" 8 78); then
-    sudo lynis update info
-    sudo lynis audit system
+    lynis update info
+    lynis audit system
   fi
 fi
   echo "${green}You can run the following command: ${red}lynis audit system,${green} whenever wanting to do a system audit"
 ###########################################################################################################################################################################################################################################################
 echo "${purple}Finished running the script, open ports are listed below so that you can close any unneeded ones. Alternatively, block everything and whitelist those needed."
 ss -lntup
-echo "${red}when you are ready type y to reboot"
-read reboot_server
-if [ $reboot_server == "y" ]; then
-  shutdown -r now
-fi
+echo "${red}when you are ready press ENTER to reboot"
+read random_wait_variable_2
+shutdown -r now
 ###########################################################################################################################################################################################################################################################
