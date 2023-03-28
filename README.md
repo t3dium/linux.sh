@@ -1,6 +1,8 @@
 # linux.sh
 A bash script I've made to automate my ubuntu server installs, it'll harden various aspects of the server and secure it, as well as automating some other useful tasks on a fresh install.
 
+![image](https://user-images.githubusercontent.com/83690012/228189115-40b4ed83-4391-430e-aaaf-96c221eb73fa.png)
+
 ## How to run
 1) `git clone https://github.com/t3dium/linux.sh.git`
 2) `cd linux.sh`
